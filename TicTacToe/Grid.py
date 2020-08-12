@@ -15,7 +15,7 @@ class Grid:
 
     def play(self, player, move):
         print(f"It's Player {self.currentPlayer}'s turn")
-        print(f'Player {player} selected {i1, i2}')
+        print(f'Player {player} selected {move[0], move[1]}')
         if self.currentPlayer != player: raise WrongTurnError(self.currentPlayer)
         self.setCell(y=move[0], x=move[1])
         self.movesLeft -= 1
