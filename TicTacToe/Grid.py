@@ -1,12 +1,15 @@
-from TicTacToe.Exceptions import GridError, InvalidGridIndexError, AlreadyFilledError, WrongTurnError, GameEndedError
 from random import randint
+from TicTacToe.Exceptions.TicTacToeExceptions import *
+from TicTacToe.Players.RandomAIPlayer import RandomAIPlayer
+from TicTacToe.Players.Player import Player
 
 
 class Grid:
-    def __init__(self):
-        self.restart()
+    def __init__(self, startingPlayer=None):
+        self.restart(startingPlayer)
 
-    def restart(self, startingPlayer=randint(1, 2)):
+    def restart(self, startingPlayer=None):
+        if startingPlayer is None: startingPlayer = randint(1, 2)
         self.cells = [[0, 0, 0], [0, 0, 0], [0, 0, 0]]
         self.currentPlayer = startingPlayer
         self.win = False
@@ -14,20 +17,18 @@ class Grid:
         self.lastPos = None
 
     def play(self, player, move):
-        print(f"It's Player {self.currentPlayer}'s turn")
-        print(f'Player {player} selected {move[0], move[1]}')
+        if self.win or not self.movesLeft: raise GameEndedError()
         if self.currentPlayer != player: raise WrongTurnError(self.currentPlayer)
         self.setCell(y=move[0], x=move[1])
         self.movesLeft -= 1
         self.lastPos = move
         self.lastPlayer = player
         self.switchToNextPlayer()
-        print(self.getFormattedCells())
+        self.hasWon()
 
         return self.cells
 
     def setCell(self, y, x):
-        if self.win or not self.movesLeft: raise GameEndedError()
         if not (3 > x >= 0 and 3 > y >= 0): raise InvalidGridIndexError(x, y)
         if self.cells[y][x]: raise AlreadyFilledError(x, y)
         self.cells[y][x] = self.currentPlayer
@@ -36,26 +37,25 @@ class Grid:
         self.currentPlayer = 2 if self.currentPlayer == 1 else 1
         return self.currentPlayer
 
-    def getFormattedCells(self):
-        f = self.cells
-        return (
+    def getFormattedCells(self, cells=None, key=None):
+        if cells is None: cells = self.cells
+        f = cells
+        formattedCells = (
             f"{f[0][0]}|{f[0][1]}|{f[0][2]}\n"
             f"{f[1][0]}|{f[1][1]}|{f[1][2]}\n"
             f"{f[2][0]}|{f[2][1]}|{f[2][2]}\n"
         )
+        if key is None:
+            return formattedCells
 
-    def hasWon(self):
-        # May be useful when optimizing https://jayeshkawli.ghost.io/tic-tac-toe/
-        if self.win: return True  # Won if already won and haven't reset
-        if self.lastPos is None: return False  # If the game hasn't started, nobody has won
-        y = self.lastPos[0]
-        x = self.lastPos[1]
-        lastPlayer = self.cells[y][x]
+        for k, v in key.items():
+            formattedCells = formattedCells.replace(str(k), str(v))
 
-        self.win = False
+        return formattedCells
 
-        c = self.cells
-
+    @staticmethod
+    def checkWin(player, cells):
+        c = cells
         tr = c[0]  # Top Row
         mr = c[1]  # Middle Row
         br = c[2]  # Bottom Row
@@ -66,36 +66,49 @@ class Grid:
         d2 = [c[2 - i][i] for i in range(3)]  # Diagonal /
 
         for line in [tr, mr, br, lc, mc, rc, d1, d2]:
-            if all(lastPlayer == cell for cell in line):
-                self.win = True
-                break
+            if all(player == cell for cell in line):
+                # Returns 1 or 2, which are truthy
+                return player
+        return False
+
+    def hasWon(self):
+        # May be useful when optimizing https://jayeshkawli.ghost.io/tic-tac-toe/
+        if self.lastPos is None: return False  # If the game hasn't started, nobody has won
+        y = self.lastPos[0]
+        x = self.lastPos[1]
+        lastPlayer = self.cells[y][x]
+
+        self.win = self.checkWin(lastPlayer, self.cells)
 
         return self.win
 
 
 if __name__ == '__main__':
     g = Grid()
-    p1Moves = [(0, 2), (1, 2), (2, 2), (2, 1), (1, 1)]
-    p2Moves = [(2, 0), (1, 0), (0, 0), (0, 1), (1, 1)]
-    player = g.currentPlayer
-    print(f"Initial Player is Player {player}")
+    key = {0: ' ', 1: 'X', 2: 'O'}
+    playerList = [None, RandomAIPlayer(1, delay=1), RandomAIPlayer(2, delay=1)]
+
+    print(f"Initial Player is {playerList[g.currentPlayer].name} ({key[g.currentPlayer]})")
 
     try:
-        i1 = i2 = win = 0
         while not g.hasWon() and g.movesLeft:
-            if player == 1:
-                g.play(player, p1Moves[i1])
-                i1 += 1
-            elif player == 2:
-                g.play(player, p2Moves[i2])
-                i2 += 1
+            player = playerList[g.currentPlayer]
 
-            player = g.currentPlayer
+            move = player.getMove(g.cells)
+            print(f"{player.name}'s Turn ({key[g.currentPlayer]}): played {move}")
+
+            try:
+                g.play(player.playerNo, move)
+            except AlreadyFilledError:
+                print(f"move {move} is Invalid")
+                continue
+
+            print(g.getFormattedCells(key=key))
 
         if g.win:
-            print("Game has ended in a win for Player", g.lastPlayer)
+            print(f"Game has ended in a win for {playerList[g.lastPlayer].name} ({key[g.currentPlayer]})")
         else:
-            print("Draw")
+            print("Game ended in a Draw!")
 
     except GridError as e:
         print(f"{e.__class__.__name__}: {e}")

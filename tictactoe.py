@@ -1,6 +1,5 @@
 import pygame
 from os import path
-from TicTacToe import Grid
 
 
 class Game:
@@ -46,4 +45,4 @@ class Game:
 
 
 if __name__ == '__main__':
-    Game('resources')
+    Game('Resources')

@@ -1,6 +1,3 @@
-from tkinter import messagebox
-
-
 class GridError(Exception):
     # Base TicTacToe Grid Error Class
     pass
@@ -27,21 +24,3 @@ class GameEndedError(GridError):
     def __init__(self):
         super().__init__(f"The Game has ended")
 
-
-class AIError(Exception):
-    # Base AI Error Class
-    pass
-
-
-class InvalidCellsError(AIError):
-    def __init__(self):
-        super().__init__(f"The AI cannot process a grid that isn't 3x3")
-
-
-class NoPossibleMovesError(AIError):
-    def __init__(self):
-        super().__init__(f"The AI could not find any valid moves")
-
-
-if __name__ == '__main__':
-    print("test")
