@@ -4,26 +4,29 @@ from TicTacToe.Players.RandomAIPlayer import RandomAIPlayer
 
 
 def test_rejectsInvalidInput():
+    player = RandomAIPlayer(1)
 
     with pytest.raises(AIExceptions.InvalidCellsError):
-        assert RandomAIPlayer.getMove([])
+        assert player.getMove([])
 
     with pytest.raises(AIExceptions.InvalidCellsError):
-        assert RandomAIPlayer.getMove([1, 2])
+        assert player.getMove([1, 2])
 
     with pytest.raises(AIExceptions.InvalidCellsError):
-        assert RandomAIPlayer.getMove([[1, 2, 3], [1, 2]])
+        assert player.getMove([[1, 2, 3], [1, 2]])
 
     with pytest.raises(AIExceptions.InvalidCellsError):
-        assert RandomAIPlayer.getMove([[], [], []])
+        assert player.getMove([[], [], []])
 
 
 def test_recognizesFullBoard():
+    player = RandomAIPlayer(1)
     with pytest.raises(AIExceptions.NoPossibleMovesError):
-        assert RandomAIPlayer.getMove([[1, 1, 1], [1, 1, 1], [1, 1, 1]])
+        assert player.getMove([[1, 1, 1], [1, 1, 1], [1, 1, 1]])
 
 
 def test_functionsAsIntended():
+    player = RandomAIPlayer(1)
     cellState = [
         [0, 0, 0],
         [0, 0, 0],
@@ -33,7 +36,7 @@ def test_functionsAsIntended():
     moveCount = 0
     while True:
         try:
-            y, x = RandomAIPlayer.getMove(cellState)
+            y, x = player.getMove(cellState)
             cellState[y][x] = 1
             moveCount += 1
         except AIExceptions.NoPossibleMovesError:

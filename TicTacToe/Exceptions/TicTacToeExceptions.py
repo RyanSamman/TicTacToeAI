@@ -4,13 +4,13 @@ class GridError(Exception):
 
 
 class InvalidGridIndexError(GridError):
-    def __init__(self, x, y):
+    def __init__(self, y, x):
         super().__init__(f'Position ({x}, {y}) is not on the Board!')
     pass
 
 
 class AlreadyFilledError(GridError):
-    def __init__(self, x, y):
+    def __init__(self, y, x):
         super().__init__(f'Position ({x}, {y}) is already filled!')
     pass
 
