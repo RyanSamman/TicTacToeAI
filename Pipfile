@@ -11,6 +11,3 @@ pytest = "*"
 requests = "*"
 matplotlib = "*"
 thorpy = "*"
-
-[requires]
-python_version = "3.7"
