@@ -1,7 +1,7 @@
 import pygame
 import thorpy
 from os import path
-from tkinter import messagebox, Tk
+from tkinter import messagebox, Tk, simpledialog
 from threading import Thread
 from multiprocessing import Process
 from TicTacToe.Grid import Grid
@@ -17,8 +17,7 @@ class Game(Grid):
         super().__init__()
         pygame.init()
         pygame.font.init()
-        self.Font = pygame.font.SysFont('Arial', 35)
-
+        self.Font = pygame.font.SysFont('Calibri', 35)
         self.clock = pygame.time.Clock()
         self.assets = {}
         self.loadAssets(assetsPath)
