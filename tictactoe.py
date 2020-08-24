@@ -1,15 +1,15 @@
 import pygame
 import thorpy
 from os import path
-from tkinter import messagebox, Tk, simpledialog
 from threading import Thread
+from tkinter import messagebox, Tk
 from multiprocessing import Process
-from TicTacToe.Grid import Grid
+
+from TicTacToe import Grid
+from TicTacToe import GameException
+from TicTacToe import TicTacToeExceptions
 from TicTacToe.util import saveData, displayData
-from TicTacToe.Players.Player import Player
-from TicTacToe.Players.AIPlayer import AIPlayer
-from TicTacToe.Players.RandomAIPlayer import RandomAIPlayer
-from TicTacToe.Exceptions.TicTacToeExceptions import AlreadyFilledError, WrongTurnError
+from TicTacToe import Player, AIPlayer, RandomAIPlayer
 
 
 class Game():
@@ -21,16 +21,23 @@ class Game():
         self.grid = Grid()
         self.AI_DELAY = 1
         self.selectAI()
-        # self.AIPlayer = AIPlayer(2, delay=self.AI_DELAY, name="Minimax AI")
 
         self.COLOR = {
             'BLACK': (000, 000, 000),
             'BLUE':  (145, 195, 220),
             'WHITE': (255, 255, 255)
         }
+
+        self.LINE_WIDTH = 10
+        self.HEADER_HEIGHT = 125
+        self.SIDE_PADDING = 50
+        self.GRID_SIZE = 300
+        self.H_CELLS = 3 # Horizontal Cells in the Grid
+        self.TOTAL_MOVES = self.H_CELLS * 3
+        self.CELL_WIDTH = self.GRID_SIZE // self.H_CELLS
         
-        self.WINDOW_WIDTH = 400
-        self.WINDOW_HEIGHT = 450
+        self.WINDOW_WIDTH = self.SIDE_PADDING + self.GRID_SIZE + self.SIDE_PADDING
+        self.WINDOW_HEIGHT = self.HEADER_HEIGHT + self.GRID_SIZE + 25 # Pad the bottom with 25px
 
         self.assets = {}
         self.loadAssets(assetsPath)
@@ -76,7 +83,7 @@ class Game():
     def selectAI(self):
         try:
             AI = self.toggleButtonPool.get_selected().get_text()
-            if AI == 'Random AI': self.AIPlayer = RandomAIPlayer(2, delay=0.5, name="Random AI")  # Set to Random AI
+            if AI == 'Random AI': self.AIPlayer = RandomAIPlayer(2, delay=self.AI_DELAY, name="Random AI")  # Set to Random AI
             else: self.AIPlayer = AIPlayer(2, delay=self.AI_DELAY, name="Minimax AI")  # Set to Minimax AI
         except AttributeError:
             self.AIPlayer = AIPlayer(2, delay=self.AI_DELAY, name="Minimax AI")  # Set to Minimax AI if any error occurs
@@ -85,8 +92,11 @@ class Game():
             self.AIPlayer = AIPlayer(2, delay=self.AI_DELAY, name="Minimax AI")
 
     def setupUI(self):
-        analyticsButton = thorpy.make_button('  Analytics  ', func=lambda: Process(target=displayData).start())
+        BUTTON_SIZE = (80, 28) # Default Button Size, 120px wide and 30px high
+
+        analyticsButton = thorpy.make_button('Analytics', func=lambda: Process(target=displayData).start())
         analyticsButton.set_main_color(self.COLOR['BLUE'])
+        analyticsButton.set_size(BUTTON_SIZE)
 
         toggleButtons = [thorpy.Togglable('Minimax AI'), thorpy.Togglable('Random AI')]
         self.toggleButtonPool = thorpy.TogglablePool(toggleButtons, first_value=toggleButtons[0], always_value=True)
@@ -103,9 +113,8 @@ class Game():
         self.box.update()
 
 
-    @staticmethod
-    def cellPos(y, x):
-        return (50 + x * 100), (130 + y * 100)
+    def cellPos(self, y, x):
+        return (self.SIDE_PADDING + x * self.CELL_WIDTH), (self.HEADER_HEIGHT + self.LINE_WIDTH // 2 + y * self.CELL_WIDTH)
 
     def drawCells(self):
         key = [None, self.assets['X'], self.assets['O']]
@@ -122,20 +131,20 @@ class Game():
             'player1': playerList[1].__class__.__name__,
             'player2': playerList[2].__class__.__name__,
             'startingPlayer': playerList[self.grid.lastPlayer].__class__.__name__,
-            'moves': 9 - self.grid.movesLeft,
+            'moves': self.TOTAL_MOVES - self.grid.movesLeft,
             'win': True if self.grid.win else False,
             'winner': playerList[self.grid.lastPlayer].__class__.__name__ if self.grid.win else '',
-            'draw': False if self.grid.win and self.grid.movesLeft != 9 else True
+            'draw': False if self.grid.win and self.grid.movesLeft != self.TOTAL_MOVES else True
         }
         Thread(target=saveData, args=(gameData,)).start()
 
     def redraw(self):
         self.window.fill((255, 255, 255))
-        pygame.draw.rect(self.window, self.COLOR['WHITE'], (50, 125, 300, 300))
-        self.window.blit(self.assets['VLine'], (50 - 5 + 100, 125))
-        self.window.blit(self.assets['VLine'], (50 - 5 + 200, 125))
-        self.window.blit(self.assets['HLine'], (50, 125 + 100))
-        self.window.blit(self.assets['HLine'], (50, 125 + 200))
+        pygame.draw.rect(self.window, self.COLOR['WHITE'], (self.SIDE_PADDING, self.HEADER_HEIGHT, self.GRID_SIZE, self.GRID_SIZE))
+        self.window.blit(self.assets['VLine'], (self.SIDE_PADDING - (self.LINE_WIDTH // 2) + self.CELL_WIDTH, self.HEADER_HEIGHT))
+        self.window.blit(self.assets['VLine'], (self.SIDE_PADDING - (self.LINE_WIDTH // 2) + 2 * self.CELL_WIDTH, self.HEADER_HEIGHT))
+        self.window.blit(self.assets['HLine'], (self.SIDE_PADDING, self.HEADER_HEIGHT + self.CELL_WIDTH))
+        self.window.blit(self.assets['HLine'], (self.SIDE_PADDING, self.HEADER_HEIGHT + 2 * self.CELL_WIDTH))
         self.drawCells()
         self.box.blit()
         self.box.update()
@@ -145,7 +154,7 @@ class Game():
     def displayTurn(self):
         playerName = "Your" if self.grid.currentPlayer == 1 else f"{self.AIPlayer.name}'s"
         currentTurnText = self.Font.render(f"{playerName} turn", True, self.COLOR['BLACK'])
-        rect = currentTurnText.get_rect(center=(self.WINDOW_WIDTH // 2, 60))
+        rect = currentTurnText.get_rect(center=(self.WINDOW_WIDTH // 2, self.HEADER_HEIGHT // 2))
         self.window.blit(currentTurnText, rect)
 
     def handleEvents(self):
@@ -160,13 +169,13 @@ class Game():
 
     def handleClick(self, mousePos):
         x, y = mousePos
-        if 350 >= x >= 50 and 425 >= y >= 125:
-            move = ((y - 125) // 100, (x - 50) // 100)
+        if self.GRID_SIZE + self.SIDE_PADDING >= x >= self.SIDE_PADDING and self.HEADER_HEIGHT + self.GRID_SIZE >= y >= self.HEADER_HEIGHT:
+            move = ((y - self.HEADER_HEIGHT) // self.LINE_WIDTH, (x - self.SIDE_PADDING) // self.LINE_WIDTH)
             try:
                 self.grid.play(1, move)
-            except WrongTurnError:
+            except TicTacToeExceptions.WrongTurnError:
                 messagebox.showerror('Error', 'Wait for your turn')
-            except AlreadyFilledError:
+            except TicTacToeExceptions.AlreadyFilledError:
                 messagebox.showerror('Error', 'Position already filled')
             self.redraw()
 
@@ -181,11 +190,8 @@ class Game():
 
 
 if __name__ == '__main__':
-    # For the messagebox, to prevent a Tkinter window from popping up
-    root = Tk()
-    root.withdraw()
     try:
         Game(assetsPath=('TicTacToe', 'Resources'), saveToCloud=True)
-    except Exception as e:
+    except GameException as e:
         messagebox.showerror('ERROR', f'{e.__class__.__name__}: {e}')
         raise e
