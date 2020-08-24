@@ -13,7 +13,7 @@ class Grid:
         self.cells = [[0, 0, 0], [0, 0, 0], [0, 0, 0]]
         self.currentPlayer = startingPlayer
         self.win = False
-        self.movesLeft = 9
+        self.movesLeft = 9 # Empty 3 * 3 Grid
         self.lastPos = None
 
     def play(self, player, move):
@@ -29,6 +29,7 @@ class Grid:
         return self.cells
 
     def setCell(self, y, x):
+        # 3 * 3 Grid, x and y from 0 to 2
         if not (3 > x >= 0 and 3 > y >= 0): raise InvalidGridIndexError(y, x)
         if self.cells[y][x]: raise AlreadyFilledError(y, x)
         self.cells[y][x] = self.currentPlayer
