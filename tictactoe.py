@@ -12,9 +12,10 @@ from TicTacToe.Players.RandomAIPlayer import RandomAIPlayer
 from TicTacToe.Exceptions.TicTacToeExceptions import AlreadyFilledError, WrongTurnError
 
 
-class Game(Grid):
+class Game():
     def __init__(self, assetsPath, saveToCloud=True):
-        super().__init__()
+        self.grid = Grid()
+
         pygame.init()
         pygame.font.init()
         self.Font = pygame.font.SysFont('Calibri', 35)
@@ -42,22 +43,22 @@ class Game(Grid):
             self.handleEvents()
             self.redraw()
 
-            if self.win or self.movesLeft == 0:
-                if self.win and self.lastPlayer == 1:
+            if self.grid.win or self.grid.movesLeft == 0:
+                if self.grid.win and self.grid.lastPlayer == 1:
                     messagebox.showinfo(f'Win!', 'Congratulations, you won!')
-                elif self.win and self.lastPlayer == 2:
+                elif self.grid.win and self.grid.lastPlayer == 2:
                     messagebox.showinfo(f'Loss!', 'The AI has won!')
                 else:
                     messagebox.showinfo(f'Draw!', 'The game has ended in a Draw!')
 
                 if saveToCloud: self.saveGameData()
                 self.selectAI()
-                self.restartGrid()
+                self.grid.restartGrid()
                 self.redraw()
 
-            if self.currentPlayer == 2:
-                move = self.AIPlayer.getMove(self.cells)
-                self.play(2, move)
+            if self.grid.currentPlayer == 2:
+                move = self.AIPlayer.getMove(self.grid.cells)
+                self.grid.play(2, move)
                 self.redraw()
 
     def selectAI(self):
@@ -96,7 +97,7 @@ class Game(Grid):
 
     def drawCells(self):
         key = [None, self.assets['X'], self.assets['O']]
-        cells = self.cells
+        cells = self.grid.cells
         for y in range(3):
             for x in range(3):
                 cell = cells[y][x]
@@ -108,11 +109,11 @@ class Game(Grid):
         gameData = {
             'player1': playerList[1].__class__.__name__,
             'player2': playerList[2].__class__.__name__,
-            'startingPlayer': playerList[self.lastPlayer].__class__.__name__,
-            'moves': 9 - self.movesLeft,
-            'win': True if self.win else False,
-            'winner': playerList[self.lastPlayer].__class__.__name__ if self.win else '',
-            'draw': False if self.win and self.movesLeft != 9 else True
+            'startingPlayer': playerList[self.grid.lastPlayer].__class__.__name__,
+            'moves': 9 - self.grid.movesLeft,
+            'win': True if self.grid.win else False,
+            'winner': playerList[self.grid.lastPlayer].__class__.__name__ if self.grid.win else '',
+            'draw': False if self.grid.win and self.grid.movesLeft != 9 else True
         }
         Thread(target=saveData, args=(gameData,)).start()
 
@@ -130,7 +131,7 @@ class Game(Grid):
         pygame.display.update()
 
     def displayTurn(self):
-        playerName = "Your" if self.currentPlayer == 1 else f"{self.AIPlayer.name}'s"
+        playerName = "Your" if self.grid.currentPlayer == 1 else f"{self.AIPlayer.name}'s"
         currentTurnText = self.Font.render(f"{playerName} turn", True, (0, 0, 0))
         rect = currentTurnText.get_rect(center=(self.WINDOW_WIDTH // 2, 60))
         self.window.blit(currentTurnText, rect)
@@ -146,7 +147,7 @@ class Game(Grid):
         if 350 >= x >= 50 and 425 >= y >= 125:
             move = ((y - 125) // 100, (x - 50) // 100)
             try:
-                self.play(1, move)
+                self.grid.play(1, move)
             except WrongTurnError:
                 messagebox.showerror('Error', 'Wait for your turn')
             except AlreadyFilledError:
