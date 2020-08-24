@@ -14,26 +14,38 @@ from TicTacToe.Exceptions.TicTacToeExceptions import AlreadyFilledError, WrongTu
 
 class Game():
     def __init__(self, assetsPath, saveToCloud=True):
+        # For the messagebox, to prevent a Tkinter window from popping up
+        root = Tk()
+        root.withdraw()
+
         self.grid = Grid()
+        self.AI_DELAY = 1
+        self.selectAI()
+        # self.AIPlayer = AIPlayer(2, delay=self.AI_DELAY, name="Minimax AI")
+
+        self.COLOR = {
+            'BLACK': (000, 000, 000),
+            'BLUE':  (145, 195, 220),
+            'WHITE': (255, 255, 255)
+        }
+        
+        self.WINDOW_WIDTH = 400
+        self.WINDOW_HEIGHT = 450
+
+        self.assets = {}
+        self.loadAssets(assetsPath)
 
         pygame.init()
         pygame.font.init()
-        self.Font = pygame.font.SysFont('Calibri', 35)
+        self.Font = pygame.font.SysFont('Calibri', 30)
         self.clock = pygame.time.Clock()
-        self.assets = {}
-        self.loadAssets(assetsPath)
 
         pygame.display.set_caption('Tic Tac Toe')
         pygame.display.set_icon(self.assets['icon'])
 
-        self.WINDOW_WIDTH = 400
-        self.WINDOW_HEIGHT = 450
         self.window = pygame.display.set_mode((self.WINDOW_WIDTH, self.WINDOW_HEIGHT))
 
         self.setupUI()
-
-        self.AIDelay = 1
-        self.AIPlayer = AIPlayer(2, delay=self.AIDelay, name="Minimax AI")
         self.redraw()
 
         self.running = True
@@ -65,22 +77,22 @@ class Game():
         try:
             AI = self.toggleButtonPool.get_selected().get_text()
             if AI == 'Random AI': self.AIPlayer = RandomAIPlayer(2, delay=0.5, name="Random AI")  # Set to Random AI
-            else: self.AIPlayer = AIPlayer(2, delay=self.AIDelay, name="Minimax AI")  # Set to Minimax AI
+            else: self.AIPlayer = AIPlayer(2, delay=self.AI_DELAY, name="Minimax AI")  # Set to Minimax AI
         except AttributeError:
-            self.AIPlayer = AIPlayer(2, delay=self.AIDelay, name="Minimax AI")  # Set to Minimax AI if any error occurs
+            self.AIPlayer = AIPlayer(2, delay=self.AI_DELAY, name="Minimax AI")  # Set to Minimax AI if any error occurs
         except Exception as e:
             messagebox.showerror(e.__class__.__name__, e)
-            self.AIPlayer = AIPlayer(2, delay=self.AIDelay, name="Minimax AI")
+            self.AIPlayer = AIPlayer(2, delay=self.AI_DELAY, name="Minimax AI")
 
     def setupUI(self):
         analyticsButton = thorpy.make_button('  Analytics  ', func=lambda: Process(target=displayData).start())
-        analyticsButton.set_main_color((145, 195, 220))
+        analyticsButton.set_main_color(self.COLOR['BLUE'])
 
         toggleButtons = [thorpy.Togglable('Minimax AI'), thorpy.Togglable('Random AI')]
         self.toggleButtonPool = thorpy.TogglablePool(toggleButtons, first_value=toggleButtons[0], always_value=True)
 
         self.box = thorpy.Box(elements=toggleButtons + [analyticsButton])
-        self.box.set_main_color((255, 255, 255))
+        self.box.set_main_color(self.COLOR['WHITE'])
 
         self.menu = thorpy.Menu(self.box)
 
@@ -119,7 +131,7 @@ class Game():
 
     def redraw(self):
         self.window.fill((255, 255, 255))
-        pygame.draw.rect(self.window, (255, 255, 255), (50, 75, 300, 300))
+        pygame.draw.rect(self.window, self.COLOR['WHITE'], (50, 125, 300, 300))
         self.window.blit(self.assets['VLine'], (50 - 5 + 100, 125))
         self.window.blit(self.assets['VLine'], (50 - 5 + 200, 125))
         self.window.blit(self.assets['HLine'], (50, 125 + 100))
@@ -132,14 +144,18 @@ class Game():
 
     def displayTurn(self):
         playerName = "Your" if self.grid.currentPlayer == 1 else f"{self.AIPlayer.name}'s"
-        currentTurnText = self.Font.render(f"{playerName} turn", True, (0, 0, 0))
+        currentTurnText = self.Font.render(f"{playerName} turn", True, self.COLOR['BLACK'])
         rect = currentTurnText.get_rect(center=(self.WINDOW_WIDTH // 2, 60))
         self.window.blit(currentTurnText, rect)
 
     def handleEvents(self):
         for event in pygame.event.get():
-            if event.type == pygame.QUIT: self.running = False
-            if event.type == pygame.MOUSEBUTTONDOWN: self.handleClick(pygame.mouse.get_pos())
+            if event.type == pygame.QUIT: 
+                self.running = False
+        
+            elif event.type == pygame.MOUSEBUTTONDOWN: 
+                mousePosition = pygame.mouse.get_pos()
+                self.handleClick(mousePosition)
             self.menu.react(event)
 
     def handleClick(self, mousePos):
@@ -156,9 +172,11 @@ class Game():
 
     def loadAssets(self, assetsPath):
         self.assets['VLine'] = pygame.image.load(path.join(*assetsPath, 'line.png'))
-        self.assets['HLine'] = pygame.transform.rotate(self.assets['VLine'], 90)
+        self.assets['HLine'] = pygame.transform.rotate(self.assets['VLine'], 90) # Rotate 90 degrees
+
         self.assets['X'] = pygame.image.load(path.join(*assetsPath, 'X.png'))
         self.assets['O'] = pygame.image.load(path.join(*assetsPath, 'O.png'))
+
         self.assets['icon'] = pygame.image.load(path.join(*assetsPath, 'icon.png'))
 
 
