@@ -9,9 +9,6 @@ from TicTacToe.Exceptions.TicTacToeExceptions import GridError, AlreadyFilledErr
 
 
 if __name__ == '__main__':
-    localGraph = Process(target=displayData)
-    localGraph.start()
-
     game = Grid()
     key = {0: ' ', 1: 'X', 2: 'O'}
     playerList = [None, Player(playerNo=1), AIPlayer(playerNo=2)]
