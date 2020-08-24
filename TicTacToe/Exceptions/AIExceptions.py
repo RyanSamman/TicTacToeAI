@@ -1,4 +1,6 @@
-class AIError(Exception):
+from TicTacToe.Exceptions.GameException import GameException
+
+class AIError(GameException):
     # Base AI Error Class
     pass
 

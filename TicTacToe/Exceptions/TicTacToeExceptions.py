@@ -1,4 +1,6 @@
-class GridError(Exception):
+from TicTacToe.Exceptions.GameException import GameException
+
+class GridError(GameException):
     # Base TicTacToe Grid Error Class
     pass
 

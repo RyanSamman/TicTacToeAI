@@ -1,7 +1,7 @@
 from time import sleep
 from threading import Thread
-from TicTacToe.Players.Player import Player
-from TicTacToe.util import checkWin, getFormattedCells, getAllPossibleMoves
+from TicTacToe import Player
+from TicTacToe.util import checkWin, getAllPossibleMoves
 from TicTacToe.Exceptions.AIExceptions import NoPossibleMovesError, AIError
 
 

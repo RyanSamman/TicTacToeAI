@@ -2,7 +2,7 @@ from time import sleep
 from random import choice
 from threading import Thread
 from TicTacToe.util import getAllPossibleMoves
-from TicTacToe.Players.Player import Player
+from TicTacToe import Player
 from TicTacToe.Exceptions.AIExceptions import InvalidCellsError, NoPossibleMovesError
 
 
