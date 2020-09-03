@@ -170,7 +170,7 @@ class Game():
     def handleClick(self, mousePos):
         x, y = mousePos
         if self.GRID_SIZE + self.SIDE_PADDING >= x >= self.SIDE_PADDING and self.HEADER_HEIGHT + self.GRID_SIZE >= y >= self.HEADER_HEIGHT:
-            move = ((y - self.HEADER_HEIGHT) // self.LINE_WIDTH, (x - self.SIDE_PADDING) // self.LINE_WIDTH)
+            move = ((y - self.HEADER_HEIGHT) // self.CELL_WIDTH, (x - self.SIDE_PADDING) // self.CELL_WIDTH)
             try:
                 self.grid.play(1, move)
             except TicTacToeExceptions.WrongTurnError:
@@ -194,4 +194,3 @@ if __name__ == '__main__':
         Game(assetsPath=('TicTacToe', 'Resources'), saveToCloud=True)
     except GameException as e:
         messagebox.showerror('ERROR', f'{e.__class__.__name__}: {e}')
-        raise e
