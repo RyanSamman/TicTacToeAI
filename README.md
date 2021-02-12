@@ -16,7 +16,7 @@ Randomly chooses a position
 ![Random AI in action](./Images/RandomDemo.gif)
 
 ## Game Analytics
-Displays the data stored on the Flask backend as a Pie Chart
+Displays the data stored on the [Flask backend](https://github.com/RyanSamman/Flask-TicTacToe) as a Pie Chart
 
 ![Game analytics](./Images/Analytics.png)
 
